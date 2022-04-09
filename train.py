@@ -132,7 +132,7 @@ class Trainer(object):
     def training(self, epoch):
         train_loss = 0.0
         print("=================================")
-        print("trainning")
+        print("training")
         print("=================================")
         self.model.train()
         self.evaluator.reset()

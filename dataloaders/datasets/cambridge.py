@@ -79,8 +79,8 @@ class CambridgeSegmentation(Dataset):
                 self._data_dir, line.replace(_image_suffix, _vertex_suffix))
 
             assert osp.isfile(_image)
-            # assert osp.isfile(_seg_target)
-            # assert osp.isfile(_vertex_target)
+            assert osp.isfile(_seg_target)
+            assert osp.isfile(_vertex_target)
 
             self.image_list.append(_image)
             self.seg_target_list.append(_seg_target)

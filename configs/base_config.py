@@ -148,6 +148,9 @@ class BaseConfig(object):
         self.opt["write_json"] = True
         self.opt["log_file"] = "log.txt"
 
+        # root
+        self.opt["save_dir"] = "/cluster/project/infk/courses/252-0579-00L/group05/models"
+
     def process_with_params(self):
         if self.need_process_with_params == False:
             return
@@ -190,6 +193,16 @@ class BaseConfig(object):
                 self.opt["seg_channel"] = len(json.load(open(fn)))
 
         self.need_process_with_params = False
+
+        # change save path
+        self.opt["checkpoint_dir"] = osp.join(
+            self.opt["save_dir"], self.opt["checkpoint_dir"])
+        self.opt["export_dir"] = osp.join(
+            self.opt["save_dir"], self.opt["export_dir"])
+        self.opt["log_output_dir"] = osp.join(
+            self.opt["save_dir"], self.opt["log_output_dir"])
+        self.opt["log_tb_dir"] = osp.join(
+            self.opt["save_dir"], self.opt["log_tb_dir"])
 
     def set_environmental_variables(self, use_default_stdout=False):
         self.process_with_params()

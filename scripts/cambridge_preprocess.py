@@ -21,7 +21,7 @@ parser.add_argument("--size", type=str, default="960*540",
                     choices=["1920*1080", "960*540", "480*270"],
                     help="generate image size")
 parser.add_argument("--root_dir", type=str,
-                    default="/home/zhouhan/data/cambridge_release", help="data root dir")
+                    default="/cluster/project/infk/courses/252-0579-00L/group05/datasets/cambridge_release", help="data root dir")
 parser.add_argument("--ver_png", type=str, default="false",
                     choices=["true", "false"], help="save vertex png")
 args = parser.parse_args()

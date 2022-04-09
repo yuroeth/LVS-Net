@@ -54,7 +54,7 @@ vertex_cmap = LinearSegmentedColormap("Rd_Bl_Rd", cdict, 350)
 seg_cmap = cm.get_cmap("rainbow")
 
 
-work_dir = '/home/zhouhan/data/cambridge_release/'
+work_dir = '/cluster/project/infk/courses/252-0579-00L/group05/datasets/cambridge_realease'
 if args.project == "true":
     scenes = os.listdir(work_dir)
 

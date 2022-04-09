@@ -10,7 +10,7 @@ class CambridgeConfig(BaseConfig):
 
         self.opt["dataset"] = "cambridge"
         self.opt["scene"] = "OldHospital_20200919_clean_2.5"
-        self.opt["base_dir"] = "/home/zhouhan/data/cambridge_release"
+        self.opt["base_dir"] = "/cluster/project/infk/courses/252-0579-00L/group05/datasets/cambridge_release"
         self.opt["eval_epoch_begin"] = 80
         self.opt["eval_interval"] = 5
         self.opt["epochs"] = 100
@@ -36,9 +36,9 @@ class CambridgeLocConfig(CambridgeConfig):
 
         self.opt["visualize_segmenation"] = False
         self.opt["visualize_voting"] = False
-        self.opt["devices"] = "3"
+        self.opt["devices"] = "0"
         self.opt["train_batch_size"] = 2
-        self.opt["experiment"] = "aug1024/"
+        self.opt["experiment"] = "vanilla/"
         self.opt["sync_bn"] = False
         self.opt["val_label_filter_threshsold"] = 20
         self.opt["validation_debug"] = False

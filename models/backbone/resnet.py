@@ -1,14 +1,15 @@
 import math
+import torch
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 from models.sync_batchnorm.batchnorm import SynchronizedBatchNorm2d
 
 model_urls = {
-    "resnet18": "https://download.pytorch.org/models/resnet18-5c106cde.pth",
-    "resnet34": "https://download.pytorch.org/models/resnet34-333f7ec4.pth",
-    "resnet50": "https://download.pytorch.org/models/resnet50-19c8e357.pth",
-    "resnet101": "https://download.pytorch.org/models/resnet101-5d3b4d8f.pth",
-    "resnet152": "https://download.pytorch.org/models/resnet152-b121ed2d.pth",
+    "resnet18": "/cluster/project/infk/courses/252-0579-00L/group05/models/resnets/resnet18-5c106cde.pth",
+    "resnet34": "/cluster/project/infk/courses/252-0579-00L/group05/models/resnets/resnet34-333f7ec4.pth",
+    "resnet50": "/cluster/project/infk/courses/252-0579-00L/group05/models/resnets/resnet50-19c8e357.pth",
+    "resnet101": "/cluster/project/infk/courses/252-0579-00L/group05/models/resnets/resnet101-5d3b4d8f.pth",
+    "resnet152": "/cluster/project/infk/courses/252-0579-00L/group05/models/resnets/resnet152-b121ed2d.pth",
 }
 
 class Bottleneck(nn.Module):
@@ -155,7 +156,7 @@ def ResNet18(output_stride, BatchNorm, pretrained=True):
     """
     model = ResNet(Bottleneck, [2, 2, 2, 2], output_stride, BatchNorm)
     if pretrained:
-        pretrain_dict = model_zoo.load_url(model_urls["resnet18"])
+        pretrain_dict = torch.load(model_urls["resnet18"])
         model._load_pretrained_model(pretrain_dict)
     return model
 
@@ -167,7 +168,7 @@ def resnet34(output_stride, BatchNorm, pretrained=True):
     """
     model = ResNet(BasicBlock, [3, 4, 6, 3], output_stride, BatchNorm)
     if pretrained:
-        pretrain_dict = model_zoo.load_url(model_urls["resnet34"])
+        pretrain_dict = torch.load(model_urls["resnet34"])
         model._load_pretrained_model(pretrain_dict)
     return model
 
@@ -180,7 +181,7 @@ def resnet50(output_stride, BatchNorm, pretrained=True):
     """
     model = ResNet(Bottleneck, [3, 4, 6, 3], output_stride, BatchNorm)
     if pretrained:
-        pretrain_dict = model_zoo.load_url(model_urls["resnet50"])
+        pretrain_dict = torch.load(model_urls["resnet50"])
         model._load_pretrained_model(pretrain_dict)
     return model
 
@@ -192,7 +193,7 @@ def ResNet101(output_stride, BatchNorm, pretrained=True):
     """
     model = ResNet(Bottleneck, [3, 4, 23, 3], output_stride, BatchNorm)
     if pretrained:
-        pretrain_dict = model_zoo.load_url(model_urls["resnet101"])
+        pretrain_dict = torch.load(model_urls["resnet101"])
         model._load_pretrained_model(pretrain_dict)
     return model
 
