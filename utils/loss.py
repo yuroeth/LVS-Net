@@ -11,7 +11,7 @@ def embeddingLoss_v3(seg_pred,
                      valid_mask=None):
     # seg_pred B x E x W x H
     # seg_target B x W x H
-    # coding_book E x L
+    # coding_book L x E
     start_idx = 1000
     stop_idx = start_idx + 10
     seg_pred = seg_pred.transpose(

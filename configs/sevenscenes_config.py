@@ -11,7 +11,7 @@ class SevenScenesConfig(BaseConfig):
         self.opt["scene"] = "office"
         self.opt["base_dir"] = "/home/zhouhan/data/7scenes_release"
         self.opt["data_dir"] = ""
-
+        self.opt["landmark"] = "point"
 
 class SevenScenesLocConfig(SevenScenesConfig):
     def set_default_opts(self):

@@ -7,6 +7,7 @@ import nn_cuda
 import ransac_voting_gpu
 import transforms3d.quaternions as txq
 import transforms3d.euler as txe
+from squeeze.squeeze import region_grow
 
 def b_inv(b_mat):
     '''
@@ -354,6 +355,83 @@ def evaluate_vertex_v2(vertex_pred, seg_pred, id2center, round_hyp_num=256, inli
     idx_filter = np.array(idx_filter)
     
     return pt3d_filter, pt2d_filter, idx_filter
+
+def evaluate_afm(vertex_pred, seg_pred, id2lines, threshold=0.1, min_num=30, max_num=10000, min_mask_num=20):
+    vertex_pred = vertex_pred.permute(0, 2, 3, 1)
+    b, h, w, vn_2 = vertex_pred.shape
+    # resize attraction field map
+    vertex = np.sign(vertex_pred) * np.exp(-np.abs(vertex_pred))
+    vertex[:,:,:,0] *= w
+    vertex[:,:,:,1] *= h
+
+    unique_labels = torch.unique(seg_pred)
+
+    line_preds = []
+    for label in unique_labels:
+        if label == 0: continue
+        mask = (seg_pred == label)
+        mask = mask.unsqueeze(0)
+        if mask.sum() < min_mask_num: continue
+        batch_win_lines = []
+        for bi in range(b):
+            hyp_num = 0
+            cur_mask = (mask[bi]).byte()
+            foreground_num = torch.sum(cur_mask)
+
+            # if too few points, just skip it
+            if foreground_num < min_num:
+                batch_win_lines.append(torch.zeros([1, 5], dtype=torch.float32, device=mask.device))
+                continue
+
+            # if too many inliers, we randomly down sample it
+            if foreground_num > max_num:
+                selection = torch.zeros(cur_mask.shape, dtype=torch.float32, device=mask.device).uniform_(0, 1)
+                selected_mask = (selection < (max_num / foreground_num.float()))
+                cur_mask *= selected_mask
+
+            coords = torch.nonzero(cur_mask).float()  # [tn,2]
+            # coords = coords[:, [1, 0]]
+            tn = coords.shape[0]
+
+            xx, yy = np.meshgrid(range(w), range(h))
+            xx = np.array(xx, dtype=np.float32)
+            yy = np.array(yy, dtype=np.float32)
+
+            offset = vertex[bi].masked_select(torch.unsqueeze(cur_mask, 2)) # [tn, 2]
+            xx = xx.masked_select(cur_mask)
+            yy = yy.masked_select(cur_mask)
+            offset = offset.view([coords.shape[0], 2])
+            xx += offset[:, 0]
+            yy += offset[:, 1]
+            ind = np.where(np.logical_and(np.logical_and(xx>=0, xx<=w-1), np.logical_and(yy>=0, yy<=h-1)))[0]
+            xx, yy = xx[ind], yy[ind]
+            ox, oy = offset[ind, 0], offset[ind, 1]
+            theta = np.mod(np.arctan2(oy, ox) + np.pi/2.0, np.pi)
+            rects = region_grow(xx, yy, theta, np.array([h, w], dtype=np.int32))
+            lengths = np.sqrt((rects[:,2]-rects[:,0])*(rects[:,2]-rects[:,0])+(rects[:,1]-rects[:,3])*(rects[:,1]-rects[:,3]))
+            ratio = rects[:,4] / lengths
+            batch_win_lines.append(rects[np.argmin(ratio)].unsqueeze(0))
+        line_preds.append(batch_win_lines, label)
+
+    line3d_filter = []
+    line2d_filter = []
+    idx_filter = []
+    for line, idx in line_preds:
+        if line[0][4] == 0 or line[0][4] >= threshold:
+            continue
+        line2d_filter.append(line[0][:4])
+        line3d_filter.append(id2lines[idx])
+        idx_filter.append(idx.data.item())
+    if len(line3d_filter) > 0:
+        line3d_filter = np.concatenate(line3d_filter).reshape(-1, 6)
+        line2d_filter = np.concatenate(line2d_filter).reshape(-1, 4)
+    else:
+        line3d_filter = np.array(line3d_filter)
+        line2d_filter = np.array(line2d_filter)
+    
+    idx_filter = np.array(idx_filter)
+    
+    return line3d_filter, line2d_filter, idx_filter
 
 def reproject_error(pt3d, pt2d, pose_pred, k_matrix):
     k_matrix = torch.from_numpy(k_matrix).double()

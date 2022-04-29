@@ -1,13 +1,25 @@
-from dataloaders.datasets import sevenscenes, cambridge
+from dataloaders.datasets import sevenscenes, cambridge, sevenscenes_line, cambridge_line
 from torch.utils.data import DataLoader
 
 def make_data_loader(cfg, **kwargs):
     if cfg["dataset"] == "7scenes":
-        train_set = sevenscenes.SevenScenesSegmentation(cfg, split="train")
-        val_set = sevenscenes.SevenScenesSegmentation(cfg, split="test")
+        if cfg["landmark"] == "point":
+            train_set = sevenscenes.SevenScenesSegmentation(cfg, split="train")
+            val_set = sevenscenes.SevenScenesSegmentation(cfg, split="test")
+        elif cfg["landmark"] == "line":
+            train_set = sevenscenes_line.SevenScenesSegmentation(cfg, split="train")
+            val_set = sevenscenes_line.SevenScenesSegmentation(cfg, split="test")
+        else:
+            raise NotImplementedError
     elif cfg["dataset"] == "cambridge":
-        train_set = cambridge.CambridgeSegmentation(cfg, split="train")
-        val_set = cambridge.CambridgeSegmentation(cfg, split="test")
+        if cfg["landmark"] == "point":
+            train_set = cambridge.CambridgeSegmentation(cfg, split="train")
+            val_set = cambridge.CambridgeSegmentation(cfg, split="test")
+        elif cfg["landmark"] == "line":
+            train_set = cambridge_line.CambridgeSegmentation(cfg, split="train")
+            val_set = cambridge_line.CambridgeSegmentation(cfg, split="test")
+        else:
+            raise NotImplementedError        
     else:
         raise NotImplementedError
     

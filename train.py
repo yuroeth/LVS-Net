@@ -43,8 +43,14 @@ class Trainer(object):
             cfg, **kwargs)
 
         # read landmark centers
+        if cfg["landmark"] == "point":
+            nfile = "id2centers.json"
+        elif cfg["landmark"] == "line":
+            nfile = "id2lines.json"
+        else:
+            raise NotImplementedError
         self.id2center = np.array(json.load(
-            open(osp.join(cfg["data_dir"], "id2centers.json")))).astype(np.float64)
+            open(osp.join(cfg["data_dir"], nfile)))).astype(np.float64)
 
         self.coding_book = torch.zeros(
             (len(self.id2center), cfg["seg_channel"]), dtype=torch.float32).cuda()
@@ -269,6 +275,7 @@ class Trainer(object):
                 global_step = i * \
                     self.cfg["val_batch_size"] + image.data.shape[0]
 
+                '''
                 # evaluate seg_pred
                 seg_target = seg_target.detach().squeeze()
                 if self.cfg["seg_decoder"]:
@@ -326,9 +333,11 @@ class Trainer(object):
                         else:
                             self.summary.visualize_vertex_image(ori_img, vertex_pred, vertex_target,
                                                                 epoch, i, global_step)
-
+                '''
+        '''
         mIoU, Acc, Acc_class, FWIoU = self.summary.visualize_seg_evaluator(
             self.evaluator, epoch, "val/seg/")
+        '''
         print("Validation:")
         print("[Epoch: %d, numImages: %5d]" % (epoch, num_images))
         print("Loss: %.9f" % (test_loss / num_iter_val))
@@ -338,6 +347,7 @@ class Trainer(object):
                                 test_seg_loss / num_iter_val, epoch)
         self.summary.add_scalar("val/total_ver_epoch",
                                 test_ver_loss / num_iter_val, epoch)
+        '''
         self.summary.add_scalar("val/pnp/10cm_epoch",
                                 np.mean(ten_count), epoch)
         self.summary.add_scalar("val/pnp/5cm_epoch",
@@ -365,6 +375,7 @@ class Trainer(object):
                 "best_pred": self.best_pred,
                 "coding_book": self.coding_book
             }, is_best, save_model=self.cfg["save_model"])
+        '''
 
 
 def main():
@@ -384,6 +395,10 @@ def main():
                         choices=["", "true", "false"], help="debug")
     parser.add_argument("--resume", type=str, default="false",
                         choices=["", "true", "false"], help="resume")
+    parser.add_argument("--landmark", type=str, default="point",
+                        choices=["point", "line"], help="landmark type")
+    parser.add_argument("--experiment", type=str, default="",
+                        help="experiment name [end with '/']")
     args = parser.parse_args()
 
     debug = None
@@ -405,6 +420,11 @@ def main():
         cfg.opt["resume"] = True
         cfg.opt["resume_checkpoint"] = cfg["export_dir"] + \
             '/ckpts/checkpoint-backup.pth.tar'
+    if args.landmark != "":
+        cfg.opt["landmark"] = args.landmark
+    if args.experiment != "":
+        cfg.opt["experiment"] = args.experiment
+
     cfg.print_opt()
     cfg.set_environmental_variables()
 

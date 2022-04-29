@@ -10,10 +10,11 @@ class CambridgeConfig(BaseConfig):
 
         self.opt["dataset"] = "cambridge"
         self.opt["scene"] = "OldHospital_20200919_clean_2.5"
-        self.opt["base_dir"] = "/cluster/project/infk/courses/252-0579-00L/group05/datasets/cambridge_release"
+        self.opt["base_dir"] = "/cluster/project/infk/courses/252-0579-00L/group05/datasets/cambridge_line"
         self.opt["eval_epoch_begin"] = 80
         self.opt["eval_interval"] = 5
         self.opt["epochs"] = 100
+        self.opt["landmark"] = "point"
 
 
 class CambridgeLocConfig(CambridgeConfig):
