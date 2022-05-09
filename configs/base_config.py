@@ -57,7 +57,7 @@ class BaseConfig(object):
         self.opt["seg_channel"] = 12
         self.opt["seg_loss_margin"] = 100
         self.opt["seg_k"] = 24
-        self.opt["visualize_segmenation"] = True
+        self.opt["visualize_segmentation"] = True
 
         # vertex_decoder
         self.opt["vertex_decoder"] = None  # "v1", "v2"

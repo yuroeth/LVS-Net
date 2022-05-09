@@ -23,7 +23,7 @@ def generate_vote_from_pts(label, pts_start, pts_end, mask):
     vertex_2d[..., 1] = np.tile(np.arange(height, dtype=np.float64), width).reshape(width, height).transpose(1, 0)
 
     t = (vertex_2d[...,0] - pt2d_start[...,0]) * (pt2d_end[...,0] - pt2d_start[...,0]) + (vertex_2d[...,1] - pt2d_start[...,1]) * (pt2d_end[...,1] - pt2d_start[...,1])
-    t = t / (np.linalg.norm(pt2d_end - pt2d_start, axis=-1) ** 2)
+    t = t / ((np.linalg.norm(pt2d_end - pt2d_start, axis=-1) ** 2) + 1e-8)
     aux = np.zeros((height, width, 2))
     t = np.tile(t[:,:,None], 2)
     mask1 = np.where(t <= 0, pt2d_start - vertex_2d, aux)

@@ -125,8 +125,8 @@ class Trainer(object):
             cfg.opt["start_epoch"] = checkpoint["epoch"] - 1
             self.model.module.load_state_dict(checkpoint["state_dict"])
             # self.coding_book.load_state_dict(checkpoint["coding_book"])
-            if not cfg["ft"]:
-                self.optimizer.load_state_dict(checkpoint["optimizer"])
+            # if not cfg["ft"]:
+            self.optimizer.load_state_dict(checkpoint["optimizer"])
             self.best_pred = checkpoint["best_pred"]
             if "coding_book" in checkpoint.keys():
                 self.coding_book = checkpoint["coding_book"]
@@ -316,7 +316,7 @@ class Trainer(object):
                 # Add batch sample into evaluator
                 if self.cfg["seg_decoder"]:
                     self.evaluator.add_seg_batch(seg_target, seg_pred)
-                    if self.cfg["visualize_segmenation"]:
+                    if self.cfg["visualize_segmentation"]:
                         self.summary.visualize_seg_image(ori_img, seg_pred, seg_target,
                                                          epoch, i, global_step, self.color_map)
 

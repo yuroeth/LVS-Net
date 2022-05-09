@@ -1,0 +1,36 @@
+Sender: LSF System <lsfadmin@eu-lo-s4-030>
+Subject: Job 217671478: <python eval.py --dataset cambridge_loc --scene KingsCollege --landmark line --experiment line0429/ --base_dir /cluster/project/infk/courses/252-0579-00L/group05/datasets/cambridge_line_old> in cluster <euler> Exited
+
+Job <python eval.py --dataset cambridge_loc --scene KingsCollege --landmark line --experiment line0429/ --base_dir /cluster/project/infk/courses/252-0579-00L/group05/datasets/cambridge_line_old> was submitted from host <eu-login-31> by user <yurohu> in cluster <euler> at Sat May  7 17:23:59 2022
+Job was executed on host(s) <16*eu-lo-s4-030>, in queue <gpu.24h>, as user <yurohu> in cluster <euler> at Sat May  7 17:24:28 2022
+</cluster/home/yurohu> was used as the home directory.
+</cluster/home/yurohu/LVSNet/LVS-Net> was used as the working directory.
+Started at Sat May  7 17:24:28 2022
+Terminated at Sat May  7 17:26:10 2022
+Results reported at Sat May  7 17:26:10 2022
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+python eval.py --dataset cambridge_loc --scene KingsCollege --landmark line --experiment line0429/ --base_dir /cluster/project/infk/courses/252-0579-00L/group05/datasets/cambridge_line_old
+------------------------------------------------------------
+
+Exited with exit code 255.
+
+Resource usage summary:
+
+    CPU time :                                   14.00 sec.
+    Max Memory :                                 3985 MB
+    Average Memory :                             2174.00 MB
+    Total Requested Memory :                     16384.00 MB
+    Delta Memory :                               12399.00 MB
+    Max Swap :                                   -
+    Max Processes :                              4
+    Max Threads :                                168
+    Run time :                                   119 sec.
+    Turnaround time :                            131 sec.
+
+The output (if any) follows:
+
+:   0%|          | 0/343 [00:00<?, ?it/s]Test loss: 8.767417908:   0%|          | 0/343 [00:01<?, ?it/s]cudaCheckError() failed : no kernel image is available for execution on the device

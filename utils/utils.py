@@ -360,7 +360,7 @@ def evaluate_afm(vertex_pred, seg_pred, id2lines, threshold=0.1, min_num=30, max
     vertex_pred = vertex_pred.permute(0, 2, 3, 1)
     b, h, w, vn_2 = vertex_pred.shape
     # resize attraction field map
-    vertex = np.sign(vertex_pred) * np.exp(-np.abs(vertex_pred))
+    vertex = torch.sign(vertex_pred) * torch.exp(-torch.abs(vertex_pred))
     vertex[:,:,:,0] *= w
     vertex[:,:,:,1] *= h
 
@@ -394,34 +394,46 @@ def evaluate_afm(vertex_pred, seg_pred, id2lines, threshold=0.1, min_num=30, max
             tn = coords.shape[0]
 
             xx, yy = np.meshgrid(range(w), range(h))
-            xx = np.array(xx, dtype=np.float32)
-            yy = np.array(yy, dtype=np.float32)
+            xx = torch.tensor(xx, dtype=torch.float)
+            yy = torch.tensor(yy, dtype=torch.float)
 
-            offset = vertex[bi].masked_select(torch.unsqueeze(cur_mask, 2)) # [tn, 2]
-            xx = xx.masked_select(cur_mask)
-            yy = yy.masked_select(cur_mask)
-            offset = offset.view([coords.shape[0], 2])
+            offset = vertex[bi].masked_select(torch.unsqueeze(cur_mask, 2)).cpu() # [tn, 2]
+            xx = xx.masked_select(cur_mask.cpu())
+            yy = yy.masked_select(cur_mask.cpu())
+            offset = offset.view([tn, 2])
             xx += offset[:, 0]
             yy += offset[:, 1]
+            xx = xx.numpy()
+            yy = yy.numpy()
+            offset = offset.numpy()
             ind = np.where(np.logical_and(np.logical_and(xx>=0, xx<=w-1), np.logical_and(yy>=0, yy<=h-1)))[0]
             xx, yy = xx[ind], yy[ind]
             ox, oy = offset[ind, 0], offset[ind, 1]
             theta = np.mod(np.arctan2(oy, ox) + np.pi/2.0, np.pi)
             rects = region_grow(xx, yy, theta, np.array([h, w], dtype=np.int32))
+            if len(rects) == 0:
+                print('lines not found')
+                continue
+            else:
+                print('lines found')
             lengths = np.sqrt((rects[:,2]-rects[:,0])*(rects[:,2]-rects[:,0])+(rects[:,1]-rects[:,3])*(rects[:,1]-rects[:,3]))
             ratio = rects[:,4] / lengths
-            batch_win_lines.append(rects[np.argmin(ratio)].unsqueeze(0))
-        line_preds.append(batch_win_lines, label)
+            batch_win_lines.append(rects[np.argmin(ratio)].reshape(1, -1))
+        if len(batch_win_lines) != 0:
+            line_preds.append((batch_win_lines, label))
 
     line3d_filter = []
     line2d_filter = []
     idx_filter = []
+    ratio_filter = []
     for line, idx in line_preds:
-        if line[0][4] == 0 or line[0][4] >= threshold:
+        # if line[0][4] == 0 or line[0][4] >= threshold:
+        if line[0][0][4] == 0:
             continue
-        line2d_filter.append(line[0][:4])
-        line3d_filter.append(id2lines[idx])
+        line2d_filter.append(line[0][0][:4])
+        line3d_filter.append(id2lines[idx - 1])
         idx_filter.append(idx.data.item())
+        ratio_filter.append(line[0][0][4])
     if len(line3d_filter) > 0:
         line3d_filter = np.concatenate(line3d_filter).reshape(-1, 6)
         line2d_filter = np.concatenate(line2d_filter).reshape(-1, 4)
@@ -430,8 +442,9 @@ def evaluate_afm(vertex_pred, seg_pred, id2lines, threshold=0.1, min_num=30, max
         line2d_filter = np.array(line2d_filter)
     
     idx_filter = np.array(idx_filter)
+    ratio_filter = np.array(ratio_filter)
     
-    return line3d_filter, line2d_filter, idx_filter
+    return line3d_filter, line2d_filter, idx_filter, ratio_filter
 
 def reproject_error(pt3d, pt2d, pose_pred, k_matrix):
     k_matrix = torch.from_numpy(k_matrix).double()

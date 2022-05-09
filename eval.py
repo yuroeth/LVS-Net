@@ -42,8 +42,14 @@ class Trainer(object):
             cfg, **kwargs)
 
         # read landmark centers
+        if cfg["landmark"] == "point":
+            nfile = "id2centers.json"
+        elif cfg["landmark"] == "line":
+            nfile = "id2lines.json"
+        else:
+            raise NotImplementedError
         self.id2center = np.array(json.load(
-            open(osp.join(cfg["data_dir"], "id2centers.json")))).astype(np.float64)
+            open(osp.join(cfg["data_dir"], nfile)))).astype(np.float64)
 
         self.coding_book = torch.zeros(
             (len(self.id2center), cfg["seg_channel"]), dtype=torch.float32).cuda()
@@ -117,8 +123,8 @@ class Trainer(object):
             checkpoint = torch.load(cfg["resume_checkpoint"])
             cfg.opt["start_epoch"] = checkpoint["epoch"] - 1
             self.model.module.load_state_dict(checkpoint["state_dict"])
-            if not cfg["ft"]:
-                self.optimizer.load_state_dict(checkpoint["optimizer"])
+            # if not cfg["ft"]:
+            self.optimizer.load_state_dict(checkpoint["optimizer"])
             self.best_pred = checkpoint["best_pred"]
             if "coding_book" in checkpoint.keys():
                 assert self.coding_book.shape == checkpoint["coding_book"].shape
@@ -198,58 +204,65 @@ class Trainer(object):
                 else:
                     seg_pred = seg_target
 
-                # evaluate vertex
-                pt3d_filter, pt2d_filter, _ = utils.evaluate_vertex_v2(vertex_pred, seg_pred,
-                                                                       self.id2center, inlier_thresh=0.999,
-                                                                       min_mask_num=self.cfg["val_label_filter_threshsold"])
-                # pt3d_filter, pt2d_filter = utils.evaluate_vertex(vertex_target, seg_pred, self.id2center)
+                # # evaluate vertex
+                # pt3d_filter, pt2d_filter, _ = utils.evaluate_vertex_v2(vertex_pred, seg_pred,
+                #                                                        self.id2center, inlier_thresh=0.999,
+                #                                                        min_mask_num=self.cfg["val_label_filter_threshsold"])
+                # print('validating image: {}'.format(i))
+                # line3d_filter, line2d_filter, _, ratio_filter = utils.evaluate_afm(vertex_pred, seg_pred, self.id2center, threshold=0.1, 
+                #                                                     min_mask_num=self.cfg["val_label_filter_threshsold"])
+                # save_dir = self.cfg["log_tb_dir"] + '/ratios'
+                # if not osp.isdir(save_dir):
+                #     os.makedirs(save_dir)
 
-                camera_k_matrix = camera_k_matrix.squeeze().numpy()
-                translation_distance, angular_distance, error = 1e9, 1e9, 1e9
-                if pt2d_filter.shape[0] > 6:
-                    # pnp
-                    ret, pose_pred = utils.pnp(
-                        pt3d_filter, pt2d_filter, camera_k_matrix)
-                    error = utils.reproject_error(
-                        pt3d_filter, pt2d_filter, pose_pred, camera_k_matrix)
-                    translation_distance, angular_distance = utils.cm_degree_metric(
-                        pose_pred, pose_target)
-                    print(translation_distance, angular_distance, error, i)
-                ten_count.append(translation_distance <
-                                 10 and angular_distance < 10)
-                five_count.append(translation_distance <
-                                  5 and angular_distance < 5)
-                three_count.append(translation_distance <
-                                   3 and angular_distance < 3)
-                one_count.append(translation_distance <
-                                 1 and angular_distance < 1)
-                translation_list.append(translation_distance)
-                angular_list.append(angular_distance)
-                reproject_list.append(error)
+                # np.savetxt(f'{save_dir}/rect_ratios_{i}.txt', ratio_filter)
+
+                # camera_k_matrix = camera_k_matrix.squeeze().numpy()
+                # translation_distance, angular_distance, error = 1e9, 1e9, 1e9
+                # if pt2d_filter.shape[0] > 6:
+                #     # pnp
+                #     ret, pose_pred = utils.pnp(
+                #         pt3d_filter, pt2d_filter, camera_k_matrix)
+                #     error = utils.reproject_error(
+                #         pt3d_filter, pt2d_filter, pose_pred, camera_k_matrix)
+                #     translation_distance, angular_distance = utils.cm_degree_metric(
+                #         pose_pred, pose_target)
+                #     print(translation_distance, angular_distance, error, i)
+                # ten_count.append(translation_distance <
+                #                  10 and angular_distance < 10)
+                # five_count.append(translation_distance <
+                #                   5 and angular_distance < 5)
+                # three_count.append(translation_distance <
+                #                    3 and angular_distance < 3)
+                # one_count.append(translation_distance <
+                #                  1 and angular_distance < 1)
+                # translation_list.append(translation_distance)
+                # angular_list.append(angular_distance)
+                # reproject_list.append(error)
 
                 # Add batch sample into evaluator
                 if self.cfg["seg_decoder"]:
                     self.evaluator.add_seg_batch(seg_target, seg_pred)
-                    if self.cfg["visualize_segmenation"]:
+                    if self.cfg["visualize_segmentation"]:
                         self.summary.visualize_seg_image(ori_img, seg_pred, seg_target,
                                                          epoch, i, global_step, self.color_map)
 
-                if self.cfg["vertex_decoder"]:
-                    # evaluate vertex_pred
-                    vertex_target, vertex_pred = vertex_target.squeeze(), vertex_pred.squeeze()
-                    self.evaluator.add_vertex_batch(vertex_target, vertex_pred)
+                # if self.cfg["vertex_decoder"]:
+                #     # evaluate vertex_pred
+                #     vertex_target, vertex_pred = vertex_target.squeeze(), vertex_pred.squeeze()
+                #     self.evaluator.add_vertex_batch(vertex_target, vertex_pred)
 
-                    # vertex acc的计算
-                    if self.cfg["visualize_voting"]:
-                        if self.cfg["visualize_landmark"] != None and self.cfg["visualize_landmark"]:
-                            self.summary.visualize_vertex_image(ori_img, vertex_pred, vertex_target,
-                                                                epoch, i, global_step, pt2d_filter, True)
-                        else:
-                            self.summary.visualize_vertex_image(ori_img, vertex_pred, vertex_target,
-                                                                epoch, i, global_step)
+                #     # vertex acc的计算
+                #     if self.cfg["visualize_voting"]:
+                #         if self.cfg["visualize_landmark"] != None and self.cfg["visualize_landmark"]:
+                #             self.summary.visualize_vertex_image(ori_img, vertex_pred, vertex_target,
+                #                                                 epoch, i, global_step, pt2d_filter, True)
+                #         else:
+                #             self.summary.visualize_vertex_image(ori_img, vertex_pred, vertex_target,
+                #                                                 epoch, i, global_step)
 
-        mIoU, Acc, Acc_class, FWIoU = self.summary.visualize_seg_evaluator(
-            self.evaluator, epoch, "val/seg/")
+        # mIoU, Acc, Acc_class, FWIoU = self.summary.visualize_seg_evaluator(
+        #     self.evaluator, epoch, "val/seg/")
         print("Validation:")
         print("[Epoch: %d, numImages: %5d]" % (epoch, num_images))
         print("Loss: %.9f" % (test_loss / num_iter_val))
@@ -259,33 +272,33 @@ class Trainer(object):
                                 test_seg_loss / num_iter_val, epoch)
         self.summary.add_scalar("val/total_ver_epoch",
                                 test_ver_loss / num_iter_val, epoch)
-        self.summary.add_scalar("val/pnp/10cm_epoch",
-                                np.mean(ten_count), epoch)
-        self.summary.add_scalar("val/pnp/5cm_epoch",
-                                np.mean(five_count), epoch)
-        self.summary.add_scalar("val/pnp/3cm_epoch",
-                                np.mean(three_count), epoch)
-        self.summary.add_scalar("val/pnp/1cm_epoch", np.mean(one_count), epoch)
-        self.summary.add_scalar(
-            "val/pnp/translation_median_epoch", np.median(translation_list), epoch)
-        self.summary.add_scalar(
-            "val/pnp/angular_median_epoch", np.median(angular_list), epoch)
+        # self.summary.add_scalar("val/pnp/10cm_epoch",
+        #                         np.mean(ten_count), epoch)
+        # self.summary.add_scalar("val/pnp/5cm_epoch",
+        #                         np.mean(five_count), epoch)
+        # self.summary.add_scalar("val/pnp/3cm_epoch",
+        #                         np.mean(three_count), epoch)
+        # self.summary.add_scalar("val/pnp/1cm_epoch", np.mean(one_count), epoch)
+        # self.summary.add_scalar(
+        #     "val/pnp/translation_median_epoch", np.median(translation_list), epoch)
+        # self.summary.add_scalar(
+        #     "val/pnp/angular_median_epoch", np.median(angular_list), epoch)
 
-        new_pred = {"mIoU": mIoU.item(), "Acc": Acc.item(), "Acc_class": Acc_class.item(), "FWIoU": FWIoU.item(),
-                    "10cm": np.mean(ten_count),
-                    "5cm": np.mean(five_count), "3cm": np.mean(three_count), "1cm": np.mean(one_count),
-                    "translation_median": np.median(translation_list), "angular_list": np.median(angular_list)}
-        print(new_pred)
-        if new_pred["translation_median"] < self.best_pred["translation_median"]:
-            is_best = True
-            self.best_pred = new_pred
-            self.saver.save_checkpoint({
-                "epoch": epoch + 1,
-                "state_dict": self.model.module.state_dict(),
-                "optimizer": self.optimizer.state_dict(),
-                "best_pred": self.best_pred,
-                "coding_book": self.coding_book
-            }, is_best, save_model=self.cfg["save_model"])
+        # new_pred = {"mIoU": mIoU.item(), "Acc": Acc.item(), "Acc_class": Acc_class.item(), "FWIoU": FWIoU.item(),
+        #             "10cm": np.mean(ten_count),
+        #             "5cm": np.mean(five_count), "3cm": np.mean(three_count), "1cm": np.mean(one_count),
+        #             "translation_median": np.median(translation_list), "angular_list": np.median(angular_list)}
+        # print(new_pred)
+        # if new_pred["translation_median"] < self.best_pred["translation_median"]:
+        #     is_best = True
+        #     self.best_pred = new_pred
+        #     self.saver.save_checkpoint({
+        #         "epoch": epoch + 1,
+        #         "state_dict": self.model.module.state_dict(),
+        #         "optimizer": self.optimizer.state_dict(),
+        #         "best_pred": self.best_pred,
+        #         "coding_book": self.coding_book
+        #     }, is_best, save_model=self.cfg["save_model"])
 
 
 def main():
@@ -305,6 +318,13 @@ def main():
                         choices=["", "true", "false"], help="debug")
     parser.add_argument("--resume", type=str, default="true",
                         choices=["", "true", "false"], help="resume")
+    parser.add_argument("--landmark", type=str, default="point",
+                        choices=["point", "line"], help="landmark type")
+    parser.add_argument("--experiment", type=str, default="",
+                        help="experiment name [end with '/']")
+    parser.add_argument("--visualize_seg", action='store_true')
+    parser.add_argument("--visualize_voting", action='store_true')
+    parser.add_argument("--base_dir", type=str, default="")
     args = parser.parse_args()
 
     debug = None
@@ -324,8 +344,19 @@ def main():
         cfg.opt["use_aug"] = True
     if args.resume == "true":
         cfg.opt["resume"] = True
-        cfg.opt["resume_checkpoint"] = cfg["export_dir"] + \
-            '/ckpts/checkpoint-backup.pth.tar'
+        # cfg.opt["resume_checkpoint"] = cfg["export_dir"] + \
+        #     '/ckpts/checkpoint-backup.pth.tar'
+    if args.landmark != "":
+        cfg.opt["landmark"] = args.landmark
+    if args.experiment != "":
+        cfg.opt["experiment"] = args.experiment
+    if args.visualize_seg:
+        cfg.opt["visualize_segmentation"] = True
+    if args.visualize_voting:
+        cfg.opt["visualize_voting"] = True
+    if args.base_dir != "":
+        cfg.opt["base_dir"] = args.base_dir
+
     cfg.print_opt()
     cfg.set_environmental_variables()
 

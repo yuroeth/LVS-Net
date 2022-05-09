@@ -35,7 +35,7 @@ class CambridgeLocConfig(CambridgeConfig):
 
         self.opt["lr"] = 0.0001
 
-        self.opt["visualize_segmenation"] = False
+        self.opt["visualize_segmentation"] = False
         self.opt["visualize_voting"] = False
         self.opt["devices"] = "0"
         self.opt["train_batch_size"] = 2

@@ -118,7 +118,7 @@ for scene in scenes:
 
         # project vertex_2d onto line (pt2d_start---pt2d_end)
         t = (vertex_2d[...,0] - pt2d_start[...,0]) * (pt2d_end[...,0] - pt2d_start[...,0]) + (vertex_2d[...,1] - pt2d_start[...,1]) * (pt2d_end[...,1] - pt2d_start[...,1])
-        t = t / (np.linalg.norm(pt2d_end - pt2d_start, axis=-1) ** 2)
+        t = t / ((np.linalg.norm(pt2d_end - pt2d_start, axis=-1) ** 2) + 1e-8)
         aux = np.zeros((height, width, 2))
         t = np.tile(t[:,:,None], 2)
         mask1 = np.where(t <= 0, pt2d_start - vertex_2d, aux)
@@ -126,6 +126,16 @@ for scene in scenes:
         mask3 = np.where((t>0)&(t<1), (pt2d_end - pt2d_start) * t + pt2d_start - vertex_2d, aux)
         attrac_field = mask1 + mask2 + mask3
         attrac_field[label == 0] = 0
+
+        if args.ver_png == "true":
+            vertex_1d = np.arctan2(attrac_field[..., 1], attrac_field[..., 0])
+            vertex_1d = (vertex_1d * 180/np.pi).astype(np.int) + 180
+
+            vertex_1d = (vertex_cmap(vertex_1d)
+                            [..., :3] * 255).astype(np.uint8)
+            vertex_1d[label == 0] = 0
+            cv2.imwrite(file.replace('seg.png', 'vertex.png'), vertex_1d)
+
         # resize
         attrac_field[:,:,0] = -1 * np.sign(attrac_field[:,:,0]) * np.log(abs(attrac_field[:,:,0] / width) + 1e-6)
         attrac_field[:,:,1] = -1 * np.sign(attrac_field[:,:,1]) * np.log(abs(attrac_field[:,:,1] / height) + 1e-6)
@@ -133,11 +143,3 @@ for scene in scenes:
         atf_file = file.replace('seg.png', 'atf.npy')
         np.save(atf_file, attrac_field)
 
-        # if args.ver_png == "true":
-        #     vertex_1d = np.arctan2(vertex_2d[..., 1], vertex_2d[..., 0])
-        #     vertex_1d = (vertex_1d * 180/np.pi).astype(np.int) + 180
-
-        #     vertex_1d = (vertex_cmap(vertex_1d)
-        #                     [..., :3] * 255).astype(np.uint8)
-        #     vertex_1d[label == 0] = 0
-        #     cv2.imwrite(file.replace('seg.png', 'vertex.png'), vertex_1d)

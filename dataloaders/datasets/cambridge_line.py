@@ -142,7 +142,7 @@ class CambridgeSegmentation(Dataset):
             # segmenataion label transfer: rgb --> int
             _seg_target = cv2.cvtColor(
                 _seg_target, cv2.COLOR_BGR2RGB).astype(np.int32)
-            _seg_target = _seg_target[:, :, 0] + _seg_target[:, :, 1] * 256
+            _seg_target = _seg_target[:, :, 0] + _seg_target[:, :, 1] * 255
             _seg_target[_seg_target >= len(self._id2centers)] = 0
 
             # camera intrinsics
