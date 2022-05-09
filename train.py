@@ -152,7 +152,8 @@ class Trainer(object):
             image, seg_target, vertex_target = [d.cuda() for d in data[:3]]
             valid_mask = data[-1].cuda()
             seg_target = seg_target.long()
-            valid_mask = (seg_target.detach() > 0).float() * valid_mask
+            # todo
+            valid_mask = (seg_target.detach() >= 0).float() * valid_mask
 
             self.scheduler(self.optimizer, i, epoch, self.best_pred["mIoU"])
             self.optimizer.zero_grad()
@@ -195,7 +196,9 @@ class Trainer(object):
 
             num_images = i * self.cfg["train_batch_size"] + image.data.shape[0]
         print("[Epoch: %d, numImages: %5d]" % (epoch, num_images))
-        print("Loss: %.9f" % (train_loss / num_iter_tr))
+        print("Total Loss: %.9f" % (train_loss / num_iter_tr))
+        print("Seg Loss: %.9f" % (train_seg_loss / num_iter_tr))
+        print("Ver Loss: %.9f" % (train_ver_loss / num_iter_tr))
         self.summary.add_scalar("train/total_loss_epoch",
                                 train_loss / num_iter_tr, epoch)
         self.summary.add_scalar("train/total_seg_epoch",
@@ -238,7 +241,8 @@ class Trainer(object):
             valid_mask = data[-1].cuda()
             pose_target, camera_k_matrix, ori_img = data[3:]
             seg_target = seg_target.long()
-            valid_mask = (seg_target.detach() > 0).float()
+            # todo
+            valid_mask = (seg_target.detach() >= 0).float()
             with torch.no_grad():
                 seg_pred, vertex_pred, seg_pred_x4s = self.model(
                     image)
@@ -381,9 +385,9 @@ class Trainer(object):
 def main():
     parser = argparse.ArgumentParser(
         description="PyTorch Landmark Segmentation Training")
-    parser.add_argument("--dataset", type=str,
+    parser.add_argument("--dataset", type=str, default="cambridge_loc",
                         choices=["7scenes_loc", "cambridge_loc"], help="experiment config file")
-    parser.add_argument("--scene", type=str, default="",
+    parser.add_argument("--scene", type=str, default="KingsCollege",
                         help="experiment scene")
     parser.add_argument("--gpu-id", type=str, default="",
                         help="experiment gpu id")
@@ -395,10 +399,11 @@ def main():
                         choices=["", "true", "false"], help="debug")
     parser.add_argument("--resume", type=str, default="false",
                         choices=["", "true", "false"], help="resume")
-    parser.add_argument("--landmark", type=str, default="point",
+    parser.add_argument("--landmark", type=str, default="line",
                         choices=["point", "line"], help="landmark type")
     parser.add_argument("--experiment", type=str, default="",
                         help="experiment name [end with '/']")
+    parser.add_argument("--base_dir", type=str, default="")
     args = parser.parse_args()
 
     debug = None
@@ -424,6 +429,8 @@ def main():
         cfg.opt["landmark"] = args.landmark
     if args.experiment != "":
         cfg.opt["experiment"] = args.experiment
+    if args.base_dir != "":
+        cfg.opt["base_dir"] = args.base_dir
 
     cfg.print_opt()
     cfg.set_environmental_variables()

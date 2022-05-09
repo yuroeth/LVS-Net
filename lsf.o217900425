@@ -1,36 +1,0 @@
-Sender: LSF System <lsfadmin@eu-lo-s4-030>
-Subject: Job 217900425: <python eval.py --dataset cambridge_loc --scene KingsCollege --landmark line --experiment line0508/ --visualize_seg> in cluster <euler> Exited
-
-Job <python eval.py --dataset cambridge_loc --scene KingsCollege --landmark line --experiment line0508/ --visualize_seg> was submitted from host <eu-login-44> by user <yurohu> in cluster <euler> at Mon May  9 13:11:06 2022
-Job was executed on host(s) <16*eu-lo-s4-030>, in queue <gpu.24h>, as user <yurohu> in cluster <euler> at Mon May  9 13:11:27 2022
-</cluster/home/yurohu> was used as the home directory.
-</cluster/home/yurohu/LVSNet/LVS-Net> was used as the working directory.
-Started at Mon May  9 13:11:27 2022
-Terminated at Mon May  9 13:12:51 2022
-Results reported at Mon May  9 13:12:51 2022
-
-Your job looked like:
-
-------------------------------------------------------------
-# LSBATCH: User input
-python eval.py --dataset cambridge_loc --scene KingsCollege --landmark line --experiment line0508/ --visualize_seg
-------------------------------------------------------------
-
-Exited with exit code 255.
-
-Resource usage summary:
-
-    CPU time :                                   11.00 sec.
-    Max Memory :                                 2977 MB
-    Average Memory :                             1359.00 MB
-    Total Requested Memory :                     160000.00 MB
-    Delta Memory :                               157023.00 MB
-    Max Swap :                                   -
-    Max Processes :                              4
-    Max Threads :                                168
-    Run time :                                   94 sec.
-    Turnaround time :                            105 sec.
-
-The output (if any) follows:
-
-:   0%|          | 0/343 [00:00<?, ?it/s]Test loss: 84.850189209:   0%|          | 0/343 [00:01<?, ?it/s]cudaCheckError() failed : no kernel image is available for execution on the device

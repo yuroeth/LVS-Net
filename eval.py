@@ -247,19 +247,27 @@ class Trainer(object):
                         self.summary.visualize_seg_image(ori_img, seg_pred, seg_target,
                                                          epoch, i, global_step, self.color_map)
 
-                # if self.cfg["vertex_decoder"]:
-                #     # evaluate vertex_pred
-                #     vertex_target, vertex_pred = vertex_target.squeeze(), vertex_pred.squeeze()
-                #     self.evaluator.add_vertex_batch(vertex_target, vertex_pred)
+                if self.cfg["vertex_decoder"]:
+                    # evaluate vertex_pred
+                    vertex_target, vertex_pred = vertex_target.squeeze(), vertex_pred.squeeze()
+                    self.evaluator.add_vertex_batch(vertex_target, vertex_pred)
 
-                #     # vertex acc的计算
-                #     if self.cfg["visualize_voting"]:
-                #         if self.cfg["visualize_landmark"] != None and self.cfg["visualize_landmark"]:
-                #             self.summary.visualize_vertex_image(ori_img, vertex_pred, vertex_target,
-                #                                                 epoch, i, global_step, pt2d_filter, True)
-                #         else:
-                #             self.summary.visualize_vertex_image(ori_img, vertex_pred, vertex_target,
-                #                                                 epoch, i, global_step)
+                    # vertex acc的计算
+                    if self.cfg["visualize_voting"]:
+                            # resize
+                            _, h, w, _ = vertex_pred.shape
+                            vertex_pred = torch.sign(vertex_pred) * torch.exp(-torch.abs(vertex_pred))
+                            vertex_pred[:,:,:,0] *= w
+                            vertex_pred[:,:,:,1] *= h
+                            vertex_target = torch.sign(vertex_target) * torch.exp(-torch.abs(vertex_target))
+                            vertex_target[:,:,:,0] *= w
+                            vertex_target[:,:,:,1] *= h        
+                        if self.cfg["visualize_landmark"] != None and self.cfg["visualize_landmark"]:
+                            self.summary.visualize_vertex_image(ori_img, vertex_pred, vertex_target,
+                                                                epoch, i, global_step, pt2d_filter, True)
+                        else:
+                            self.summary.visualize_vertex_image(ori_img, vertex_pred, vertex_target,
+                                                                epoch, i, global_step)
 
         # mIoU, Acc, Acc_class, FWIoU = self.summary.visualize_seg_evaluator(
         #     self.evaluator, epoch, "val/seg/")
@@ -304,9 +312,9 @@ class Trainer(object):
 def main():
     parser = argparse.ArgumentParser(
         description="PyTorch Landmark Segmentation Training")
-    parser.add_argument("--dataset", type=str,
+    parser.add_argument("--dataset", type=str, default="cambridge_loc",
                         choices=["7scenes_loc", "cambridge_loc"], help="experiment config file")
-    parser.add_argument("--scene", type=str, default="",
+    parser.add_argument("--scene", type=str, default="KingsCollege",
                         help="experiment scene")
     parser.add_argument("--gpu-id", type=str, default="",
                         help="experiment gpu id")
@@ -318,7 +326,7 @@ def main():
                         choices=["", "true", "false"], help="debug")
     parser.add_argument("--resume", type=str, default="true",
                         choices=["", "true", "false"], help="resume")
-    parser.add_argument("--landmark", type=str, default="point",
+    parser.add_argument("--landmark", type=str, default="line",
                         choices=["point", "line"], help="landmark type")
     parser.add_argument("--experiment", type=str, default="",
                         help="experiment name [end with '/']")
