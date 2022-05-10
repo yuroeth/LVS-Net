@@ -450,6 +450,21 @@ def evaluate_afm(vertex_pred, seg_pred, id2lines, threshold=0.1, min_num=30, max
     
     return line3d_filter, line2d_filter, idx_filter, ratio_filter
 
+def tr2poselib_inpf(line2d, line3d):
+    l = []
+    X = []
+    V = []
+    for lid in range(len(line2d)):
+        x1, y1, x2, y2 = line2d[lid]
+        homo_coord = [y2-y1, x1-x2, -x1*y2+x2*y1]
+        l.append(np.array(homo_coord).reshape(3,1).astype(np.float64))
+        X1, Y1, Z1, X2, Y2, Z2 = line3d[lid]
+        X.append(np.array([X1, Y1, Z1]).reshape(3,1).astype(np.float64))
+        bear_vec = np.array([X1-X2, Y1-Y2, Z1-Z2])
+        bear_vec = bear_vec / np.linalg.norm(bear_vec)
+        V.append(bear_vec.reshape(3,1).astype(np.float64))
+    return l, X, V
+
 def reproject_error(pt3d, pt2d, pose_pred, k_matrix):
     k_matrix = torch.from_numpy(k_matrix).double()
     f, ppx, ppy = k_matrix[0, 0], k_matrix[0, 2], k_matrix[1, 2]

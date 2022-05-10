@@ -153,7 +153,7 @@ class Trainer(object):
             valid_mask = data[-1].cuda()
             seg_target = seg_target.long()
             # todo
-            valid_mask = (seg_target.detach() >= 0).float() * valid_mask
+            valid_mask = (seg_target.detach() > 0).float() * valid_mask
 
             self.scheduler(self.optimizer, i, epoch, self.best_pred["mIoU"])
             self.optimizer.zero_grad()
@@ -242,7 +242,7 @@ class Trainer(object):
             pose_target, camera_k_matrix, ori_img = data[3:]
             seg_target = seg_target.long()
             # todo
-            valid_mask = (seg_target.detach() >= 0).float()
+            valid_mask = (seg_target.detach() > 0).float()
             with torch.no_grad():
                 seg_pred, vertex_pred, seg_pred_x4s = self.model(
                     image)
@@ -278,6 +278,8 @@ class Trainer(object):
 
                 global_step = i * \
                     self.cfg["val_batch_size"] + image.data.shape[0]
+                
+                num_images = i * self.cfg["val_batch_size"] + image.data.shape[0]
 
                 '''
                 # evaluate seg_pred
@@ -345,6 +347,8 @@ class Trainer(object):
         print("Validation:")
         print("[Epoch: %d, numImages: %5d]" % (epoch, num_images))
         print("Loss: %.9f" % (test_loss / num_iter_val))
+        print("Seg Loss: %.9f" % (test_seg_loss / num_iter_val))
+        print("Ver Loss: %.9f" % (test_ver_loss / num_iter_val))
         self.summary.add_scalar("val/total_loss_epoch",
                                 test_loss / num_iter_val, epoch)
         self.summary.add_scalar("val/total_seg_epoch",
@@ -446,8 +450,9 @@ def main():
     for epoch in range(trainer.cfg["start_epoch"], trainer.cfg["epochs"]):
         if cfg["validation_debug"]:
             trainer.validation(epoch)
-        isValidationEpoch = (epoch > cfg["eval_epoch_begin"] and (
-            epoch + 1) % cfg["eval_interval"] == 0)
+        # isValidationEpoch = (epoch > cfg["eval_epoch_begin"] and (
+        #     epoch + 1) % cfg["eval_interval"] == 0)
+        isValidationEpoch = True
         if cfg["train"]:
             trainer.training(epoch)
         if not trainer.cfg["no_val"] and isValidationEpoch == True:

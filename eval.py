@@ -205,20 +205,26 @@ class Trainer(object):
                 else:
                     seg_pred = seg_target
 
+                num_images = i * self.cfg["val_batch_size"] + image.data.shape[0]
+
                 # # evaluate vertex
                 # pt3d_filter, pt2d_filter, _ = utils.evaluate_vertex_v2(vertex_pred, seg_pred,
                 #                                                        self.id2center, inlier_thresh=0.999,
                 #                                                        min_mask_num=self.cfg["val_label_filter_threshsold"])
 
-                # # evaluate atf
-                # print('validating image: {}'.format(i))
-                # line3d_filter, line2d_filter, _, ratio_filter = utils.evaluate_afm(vertex_pred, seg_pred, self.id2center, threshold=0.1, 
-                #                                                     min_mask_num=self.cfg["val_label_filter_threshsold"])
-
+                # evaluate atf
+                print('validating image: {}'.format(i + 1))
+                line3d_filter, line2d_filter, _, ratio_filter = utils.evaluate_afm(vertex_pred, seg_pred, self.id2center, threshold=0.1, 
+                                                                    min_mask_num=self.cfg["val_label_filter_threshsold"])
+                
                 # camera_k_matrix = camera_k_matrix.squeeze().numpy()
                 # translation_distance, angular_distance, error = 1e9, 1e9, 1e9
-                # if line2d_filter.shape[0] > 6:
-                #     camera_pose = poselib.p3ll(line2d_filter, line3d_filter, camera_k_matrix) #?
+                if line2d_filter.shape[0] > 6:
+                    l, X, V = utils.tr2poselib_inpf(line2d_filter, line3d_filter)
+                    print(len(l), len(X), len(V))
+                    camera_pose = poselib.p3ll(l, X, V)
+                    print(len(camera_pose),camera_pose)
+                    
                 # if pt2d_filter.shape[0] > 6:
                 #     # pnp
                 #     ret, pose_pred = utils.pnp(
@@ -268,20 +274,20 @@ class Trainer(object):
                         else:
                             self.summary.visualize_vertex_image(ori_img, vertex_pred, vertex_target,
                                                                 epoch, i, global_step)
-
+            break
         # mIoU, Acc, Acc_class, FWIoU = self.summary.visualize_seg_evaluator(
         #     self.evaluator, epoch, "val/seg/")
-        print("Validation:")
-        print("[Epoch: %d, numImages: %5d]" % (epoch, num_images))
-        print("Loss: %.9f" % (test_loss / num_iter_val))
-        print("Seg Loss: %.9f" % (test_seg_loss / num_iter_val))
-        print("Ver Loss: %.9f" % (test_ver_loss / num_iter_val))
-        self.summary.add_scalar("val/total_loss_epoch",
-                                test_loss / num_iter_val, epoch)
-        self.summary.add_scalar("val/total_seg_epoch",
-                                test_seg_loss / num_iter_val, epoch)
-        self.summary.add_scalar("val/total_ver_epoch",
-                                test_ver_loss / num_iter_val, epoch)
+        # print("Validation:")
+        # print("[Epoch: %d, numImages: %5d]" % (epoch, num_images))
+        # print("Loss: %.9f" % (test_loss / num_iter_val))
+        # print("Seg Loss: %.9f" % (test_seg_loss / num_iter_val))
+        # print("Ver Loss: %.9f" % (test_ver_loss / num_iter_val))
+        # self.summary.add_scalar("val/total_loss_epoch",
+        #                         test_loss / num_iter_val, epoch)
+        # self.summary.add_scalar("val/total_seg_epoch",
+        #                         test_seg_loss / num_iter_val, epoch)
+        # self.summary.add_scalar("val/total_ver_epoch",
+        #                         test_ver_loss / num_iter_val, epoch)
         # self.summary.add_scalar("val/pnp/10cm_epoch",
         #                         np.mean(ten_count), epoch)
         # self.summary.add_scalar("val/pnp/5cm_epoch",
