@@ -99,8 +99,8 @@ class TensorboardSummary(object):
 
         img2 = np.uint8(vertex_cmap(img)[..., :3] * 255)
 
-        pt2d = pt2d.astype(np.int32)
-        if visualize_landmarks:
+        if visualize_landmarks and pt2d is not None:
+            pt2d = pt2d.astype(np.int32)
             for idx in range(pt2d.shape[0]):
                 img2 = cv2.drawMarker(img2, (pt2d[idx, 0], pt2d[idx, 1]), [0, 0, 0], 0, 20, 2)
 

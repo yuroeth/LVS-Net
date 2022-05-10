@@ -1,0 +1,39 @@
+Sender: LSF System <lsfadmin@eu-g3-048>
+Subject: Job 217933646: <python eval.py --experiment line0508/ --visualize_seg --visualize_voting> in cluster <euler> Exited
+
+Job <python eval.py --experiment line0508/ --visualize_seg --visualize_voting> was submitted from host <eu-login-44> by user <yurohu> in cluster <euler> at Mon May  9 15:04:00 2022
+Job was executed on host(s) <16*eu-g3-048>, in queue <gpu.24h>, as user <yurohu> in cluster <euler> at Mon May  9 16:13:04 2022
+</cluster/home/yurohu> was used as the home directory.
+</cluster/home/yurohu/LVSNet/LVS-Net> was used as the working directory.
+Started at Mon May  9 16:13:04 2022
+Terminated at Mon May  9 16:13:11 2022
+Results reported at Mon May  9 16:13:11 2022
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+python eval.py --experiment line0508/ --visualize_seg --visualize_voting
+------------------------------------------------------------
+
+Exited with exit code 1.
+
+Resource usage summary:
+
+    CPU time :                                   0.23 sec.
+    Max Memory :                                 14 MB
+    Average Memory :                             3.00 MB
+    Total Requested Memory :                     16384.00 MB
+    Delta Memory :                               16370.00 MB
+    Max Swap :                                   -
+    Max Processes :                              1
+    Max Threads :                                1
+    Run time :                                   13 sec.
+    Turnaround time :                            4151 sec.
+
+The output (if any) follows:
+
+  File "eval.py", line 265
+    if self.cfg["visualize_landmark"] != None and self.cfg["visualize_landmark"]:
+                                                                                ^
+IndentationError: unindent does not match any outer indentation level

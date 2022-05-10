@@ -357,19 +357,20 @@ def evaluate_vertex_v2(vertex_pred, seg_pred, id2center, round_hyp_num=256, inli
     return pt3d_filter, pt2d_filter, idx_filter
 
 def evaluate_afm(vertex_pred, seg_pred, id2lines, threshold=0.1, min_num=30, max_num=10000, min_mask_num=20):
-    vertex_pred = vertex_pred.permute(0, 2, 3, 1)
-    b, h, w, vn_2 = vertex_pred.shape
+    vertex = vertex_pred.permute(0, 2, 3, 1).detach().cpu()
+    b, h, w, vn_2 = vertex.shape
     # resize attraction field map
-    vertex = torch.sign(vertex_pred) * torch.exp(-torch.abs(vertex_pred))
+    vertex = torch.sign(vertex) * torch.exp(-torch.abs(vertex))
     vertex[:,:,:,0] *= w
     vertex[:,:,:,1] *= h
 
-    unique_labels = torch.unique(seg_pred)
+    unique_labels = torch.unique(seg_pred.detach().cpu())
 
     line_preds = []
+    count = 0
     for label in unique_labels:
         if label == 0: continue
-        mask = (seg_pred == label)
+        mask = (seg_pred.detach().cpu() == label)
         mask = mask.unsqueeze(0)
         if mask.sum() < min_mask_num: continue
         batch_win_lines = []
@@ -397,9 +398,9 @@ def evaluate_afm(vertex_pred, seg_pred, id2lines, threshold=0.1, min_num=30, max
             xx = torch.tensor(xx, dtype=torch.float)
             yy = torch.tensor(yy, dtype=torch.float)
 
-            offset = vertex[bi].masked_select(torch.unsqueeze(cur_mask, 2)).cpu() # [tn, 2]
-            xx = xx.masked_select(cur_mask.cpu())
-            yy = yy.masked_select(cur_mask.cpu())
+            offset = vertex[bi].masked_select(torch.unsqueeze(cur_mask, 2)) # [tn, 2]
+            xx = xx.masked_select(cur_mask)
+            yy = yy.masked_select(cur_mask)
             offset = offset.view([tn, 2])
             xx += offset[:, 0]
             yy += offset[:, 1]
@@ -412,16 +413,19 @@ def evaluate_afm(vertex_pred, seg_pred, id2lines, threshold=0.1, min_num=30, max
             theta = np.mod(np.arctan2(oy, ox) + np.pi/2.0, np.pi)
             rects = region_grow(xx, yy, theta, np.array([h, w], dtype=np.int32))
             if len(rects) == 0:
-                print('lines not found')
+                # print('lines not found')
                 continue
             else:
-                print('lines found')
-            lengths = np.sqrt((rects[:,2]-rects[:,0])*(rects[:,2]-rects[:,0])+(rects[:,1]-rects[:,3])*(rects[:,1]-rects[:,3]))
-            ratio = rects[:,4] / lengths
-            batch_win_lines.append(rects[np.argmin(ratio)].reshape(1, -1))
+                count += 1
+                lengths = np.sqrt((rects[:,2]-rects[:,0])*(rects[:,2]-rects[:,0])+(rects[:,1]-rects[:,3])*(rects[:,1]-rects[:,3]))
+                ratio = rects[:,4] / lengths
+                batch_win_lines.append(rects[np.argmin(ratio)].reshape(1, -1))
+                # print('lines found, minimum ratio: {:.2f}'.format(np.min(ratio)))
+
         if len(batch_win_lines) != 0:
             line_preds.append((batch_win_lines, label))
 
+    print("detected {:d} / {:d} lines".format(count, len(unique_labels)))
     line3d_filter = []
     line2d_filter = []
     idx_filter = []
@@ -431,7 +435,7 @@ def evaluate_afm(vertex_pred, seg_pred, id2lines, threshold=0.1, min_num=30, max
         if line[0][0][4] == 0:
             continue
         line2d_filter.append(line[0][0][:4])
-        line3d_filter.append(id2lines[idx - 1])
+        line3d_filter.append(id2lines[idx])
         idx_filter.append(idx.data.item())
         ratio_filter.append(line[0][0][4])
     if len(line3d_filter) > 0:

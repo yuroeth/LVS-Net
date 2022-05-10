@@ -18,6 +18,7 @@ from utils.summaries import TensorboardSummary
 from utils.metrics import Evaluator
 from utils import utils
 from torch.autograd import Variable
+import poselib
  
 import os.path as osp
 
@@ -208,17 +209,16 @@ class Trainer(object):
                 # pt3d_filter, pt2d_filter, _ = utils.evaluate_vertex_v2(vertex_pred, seg_pred,
                 #                                                        self.id2center, inlier_thresh=0.999,
                 #                                                        min_mask_num=self.cfg["val_label_filter_threshsold"])
+
+                # # evaluate atf
                 # print('validating image: {}'.format(i))
                 # line3d_filter, line2d_filter, _, ratio_filter = utils.evaluate_afm(vertex_pred, seg_pred, self.id2center, threshold=0.1, 
                 #                                                     min_mask_num=self.cfg["val_label_filter_threshsold"])
-                # save_dir = self.cfg["log_tb_dir"] + '/ratios'
-                # if not osp.isdir(save_dir):
-                #     os.makedirs(save_dir)
-
-                # np.savetxt(f'{save_dir}/rect_ratios_{i}.txt', ratio_filter)
 
                 # camera_k_matrix = camera_k_matrix.squeeze().numpy()
                 # translation_distance, angular_distance, error = 1e9, 1e9, 1e9
+                # if line2d_filter.shape[0] > 6:
+                #     camera_pose = poselib.p3ll(line2d_filter, line3d_filter, camera_k_matrix) #?
                 # if pt2d_filter.shape[0] > 6:
                 #     # pnp
                 #     ret, pose_pred = utils.pnp(
@@ -254,14 +254,14 @@ class Trainer(object):
 
                     # vertex acc的计算
                     if self.cfg["visualize_voting"]:
-                            # resize
-                            _, h, w, _ = vertex_pred.shape
-                            vertex_pred = torch.sign(vertex_pred) * torch.exp(-torch.abs(vertex_pred))
-                            vertex_pred[:,:,:,0] *= w
-                            vertex_pred[:,:,:,1] *= h
-                            vertex_target = torch.sign(vertex_target) * torch.exp(-torch.abs(vertex_target))
-                            vertex_target[:,:,:,0] *= w
-                            vertex_target[:,:,:,1] *= h        
+                        # resize
+                        _, h, w = vertex_pred.shape
+                        vertex_pred = torch.sign(vertex_pred) * torch.exp(-torch.abs(vertex_pred))
+                        vertex_pred[0,:,:] *= w
+                        vertex_pred[1,:,:] *= h
+                        vertex_target = torch.sign(vertex_target) * torch.exp(-torch.abs(vertex_target))
+                        vertex_target[0,:,:] *= w
+                        vertex_target[1,:,:] *= h        
                         if self.cfg["visualize_landmark"] != None and self.cfg["visualize_landmark"]:
                             self.summary.visualize_vertex_image(ori_img, vertex_pred, vertex_target,
                                                                 epoch, i, global_step, pt2d_filter, True)
@@ -274,6 +274,8 @@ class Trainer(object):
         print("Validation:")
         print("[Epoch: %d, numImages: %5d]" % (epoch, num_images))
         print("Loss: %.9f" % (test_loss / num_iter_val))
+        print("Seg Loss: %.9f" % (test_seg_loss / num_iter_val))
+        print("Ver Loss: %.9f" % (test_ver_loss / num_iter_val))
         self.summary.add_scalar("val/total_loss_epoch",
                                 test_loss / num_iter_val, epoch)
         self.summary.add_scalar("val/total_seg_epoch",

@@ -1,0 +1,170 @@
+Sender: LSF System <lsfadmin@eu-g3-044>
+Subject: Job 218011331: <python eval.py --experiment line0508/> in cluster <euler> Exited
+
+Job <python eval.py --experiment line0508/> was submitted from host <eu-login-14> by user <yurohu> in cluster <euler> at Mon May  9 22:00:54 2022
+Job was executed on host(s) <16*eu-g3-044>, in queue <gpu.24h>, as user <yurohu> in cluster <euler> at Mon May  9 22:10:45 2022
+</cluster/home/yurohu> was used as the home directory.
+</cluster/home/yurohu/LVSNet/LVS-Net> was used as the working directory.
+Started at Mon May  9 22:10:45 2022
+Terminated at Mon May  9 22:12:47 2022
+Results reported at Mon May  9 22:12:47 2022
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+python eval.py --experiment line0508/
+------------------------------------------------------------
+
+TERM_MEMLIMIT: job killed after reaching LSF memory usage limit.
+Exited with exit code 1.
+
+Resource usage summary:
+
+    CPU time :                                   107.11 sec.
+    Max Memory :                                 72000 MB
+    Average Memory :                             41455.83 MB
+    Total Requested Memory :                     72000.00 MB
+    Delta Memory :                               0.00 MB
+    Max Swap :                                   -
+    Max Processes :                              7
+    Max Threads :                                534
+    Run time :                                   121 sec.
+    Turnaround time :                            713 sec.
+
+The output (if any) follows:
+
+:   0%|          | 0/343 [00:00<?, ?it/s]Test loss: 84.850189209:   0%|          | 0/343 [00:02<?, ?it/s]Test loss: 84.850189209:   0%|          | 1/343 [00:06<36:08,  6.34s/it]Test loss: 90.160358429:   0%|          | 1/343 [00:06<36:08,  6.34s/it]Test loss: 90.160358429:   1%|          | 2/343 [00:10<32:28,  5.71s/it]Test loss: 92.688545227:   1%|          | 2/343 [00:10<32:28,  5.71s/it]Test loss: 92.688545227:   1%|          | 3/343 [00:14<30:01,  5.30s/it]Test loss: 95.285009384:   1%|          | 3/343 [00:15<30:01,  5.30s/it]Test loss: 95.285009384:   1%|          | 4/343 [00:19<28:23,  5.02s/it]Test loss: 96.428849792:   1%|          | 4/343 [00:19<28:23,  5.02s/it]Test loss: 96.428849792:   1%|▏         | 5/343 [00:23<27:01,  4.80s/it]Test loss: 97.160339355:   1%|▏         | 5/343 [00:23<27:01,  4.80s/it]Test loss: 97.160339355:   2%|▏         | 6/343 [00:27<25:48,  4.59s/it]Test loss: 97.192866734:   2%|▏         | 6/343 [00:27<25:48,  4.59s/it]Test loss: 97.192866734:   2%|▏         | 7/343 [00:32<25:55,  4.63s/it]Test loss: 96.921154976:   2%|▏         | 7/343 [00:32<25:55,  4.63s/it]Test loss: 96.921154976:   2%|▏         | 8/343 [00:37<26:02,  4.66s/it]Test loss: 95.122124566:   2%|▏         | 8/343 [00:37<26:02,  4.66s/it]Test loss: 95.122124566:   3%|▎         | 9/343 [00:41<24:52,  4.47s/it]Test loss: 93.886742401:   3%|▎         | 9/343 [00:41<24:52,  4.47s/it]Test loss: 93.886742401:   3%|▎         | 10/343 [00:45<24:33,  4.42s/it]Test loss: 92.295101513:   3%|▎         | 10/343 [00:45<24:33,  4.42s/it]Test loss: 92.295101513:   3%|▎         | 11/343 [00:49<24:32,  4.44s/it]Test loss: 91.508145014:   3%|▎         | 11/343 [00:50<24:32,  4.44s/it]Test loss: 91.508145014:   3%|▎         | 12/343 [00:54<24:24,  4.42s/it]Test loss: 91.106739925:   3%|▎         | 12/343 [00:54<24:24,  4.42s/it]Test loss: 91.106739925:   4%|▍         | 13/343 [00:58<24:16,  4.41s/it]Test loss: 91.047940390:   4%|▍         | 13/343 [00:58<24:16,  4.41s/it]Test loss: 91.047940390:   4%|▍         | 14/343 [01:03<24:16,  4.43s/it]Test loss: 90.663823954:   4%|▍         | 14/343 [01:03<24:16,  4.43s/it]Test loss: 90.663823954:   4%|▍         | 15/343 [01:07<24:17,  4.44s/it]Test loss: 90.575451374:   4%|▍         | 15/343 [01:07<24:17,  4.44s/it]Test loss: 90.575451374:   5%|▍         | 16/343 [01:12<24:16,  4.45s/it]Test loss: 90.165847778:   5%|▍         | 16/343 [01:12<24:16,  4.45s/it]Test loss: 90.165847778:   5%|▍         | 17/343 [01:16<24:17,  4.47s/it]Test loss: 89.699783325:   5%|▍         | 17/343 [01:16<24:17,  4.47s/it]Test loss: 89.699783325:   5%|▌         | 18/343 [01:21<24:15,  4.48s/it]Test loss: 89.028044048:   5%|▌         | 18/343 [01:21<24:15,  4.48s/it]Test loss: 89.028044048:   6%|▌         | 19/343 [01:25<24:06,  4.47s/it]Test loss: 88.367457581:   6%|▌         | 19/343 [01:25<24:06,  4.47s/it]Test loss: 88.367457581:   6%|▌         | 19/343 [01:30<25:40,  4.76s/it]
+Traceback (most recent call last):
+  File "eval.py", line 382, in <module>
+    main()
+  File "eval.py", line 376, in main
+    trainer.validation(trainer.cfg["start_epoch"])
+  File "eval.py", line 215, in validation
+    min_mask_num=self.cfg["val_label_filter_threshsold"])
+  File "/cluster/home/yurohu/LVSNet/LVS-Net/utils/utils.py", line 414, in evaluate_afm
+    rects = region_grow(xx, yy, theta, np.array([h, w], dtype=np.int32))
+  File "/cluster/home/yurohu/anaconda3/envs/vsnet/lib/python3.7/site-packages/torch/utils/data/_utils/signal_handling.py", line 66, in handler
+    _error_if_any_worker_fails()
+RuntimeError: DataLoader worker (pid 16722) is killed by signal: Killed. 
+Params:
+----------------------------------------------------
+	message_prefix                :loc
+	message                       :
+	seed                          :1
+	backbone                      :resnet
+	out_stride                    :16
+	sync_bn                       :False
+	val_label_filter_threshsold   :20
+	seg_decoder                   :v1
+	seg_loss_type                 :embedding_v3
+	seg_loss_margin               :0.5
+	seg_k                         :2
+	visualize_segmentation        :False
+	vertex_decoder                :v2
+	vertex_loss_type              :l1_loss
+	vertex_loss_root              :1
+	vertex_channel                :2
+	vertex_loss_ratio             :3.0
+	seg_loss_ratio                :1.0
+	visualize_voting              :False
+	visualize_landmark            :False
+	train                         :True
+	start_epoch                   :0
+	eval_interval                 :5
+	eval_epoch_begin              :80
+	no_val                        :False
+	use_pnp                       :False
+	save_model                    :True
+	val_batch_size                :1
+	test_batch_size               :1
+	shuffle                       :True
+	num_workers                   :4
+	base_dir                      :/cluster/project/infk/courses/252-0579-00L/group05/datasets/cambridge_line
+	data_dir                      :
+	color_map_filename            :id2colors.json
+	optimizer                     :Adam
+	weight_decay                  :0.0005
+	momentum                      :0.9
+	nesterov                      :False
+	lr_scheduler                  :poly
+	lr_step                       :20
+	devices                       :0
+	use_own_nn                    :True
+	validation_debug              :False
+	critical_params               :['dataset', 'scene', 'train_batch_size', 'epochs', 'lr', 'use_aug', 'seg_channel']
+	resume                        :True
+	resume_checkpoint             :
+	checkname                     :landmarknet-resnet
+	export_dir                    :logs
+	log_tb_dir                    :logs
+	experiment                    :line0508/
+	checkpoint_dir                :ckpts
+	best_model_name               :best_model.pth.tar
+	write_json                    :True
+	log_file                      :log.txt
+	save_dir                      :/cluster/project/infk/courses/252-0579-00L/group05/models
+	coding_book_filename          :channel(64)_isomap(k24)_cambridge_ShopFacade.json
+	landmark                      :line
+----------------------------------------------------
+Critical Params:
+	seg_channel                   :64
+	epochs                        :100
+	train_batch_size              :2
+	use_aug                       :True
+	dataset                       :cambridge
+	scene                         :KingsCollege
+	lr                            :0.0001
+----------------------------------------------------
+write opt to: /cluster/project/infk/courses/252-0579-00L/group05/models/cambridge_logs/line0508/dataset[cambridge]scene[KingsCollege]train_batch_size[2]epochs[100]lr[0.0001]use_aug[True]seg_channel[64]/config.json
+logging to /cluster/project/infk/courses/252-0579-00L/group05/models/cambridge_logs/line0508/dataset[cambridge]scene[KingsCollege]train_batch_size[2]epochs[100]lr[0.0001]use_aug[True]seg_channel[64]/log.txt
+Number of images in train: 1220
+Number of images in test: 343
+coding book size = torch.Size([518, 64])
+Using poly LR Scheduler!
+True
+=> loaded checkpoint True (epoch 100)
+Starting Epoch: 99
+Total Epoches: 100
+=================================
+validation
+=================================
+validating image: 0
+detected 247 / 298 lines
+validating image: 1
+detected 251 / 302 lines
+validating image: 2
+detected 257 / 307 lines
+validating image: 3
+detected 256 / 314 lines
+validating image: 4
+detected 257 / 313 lines
+validating image: 5
+detected 246 / 297 lines
+validating image: 6
+detected 273 / 342 lines
+validating image: 7
+detected 276 / 350 lines
+validating image: 8
+detected 245 / 290 lines
+validating image: 9
+detected 258 / 318 lines
+validating image: 10
+detected 266 / 321 lines
+validating image: 11
+detected 263 / 319 lines
+validating image: 12
+detected 262 / 325 lines
+validating image: 13
+detected 270 / 333 lines
+validating image: 14
+detected 259 / 328 lines
+validating image: 15
+detected 256 / 318 lines
+validating image: 16
+detected 256 / 304 lines
+validating image: 17
+detected 266 / 307 lines
+validating image: 18
+detected 268 / 311 lines
+validating image: 19
