@@ -19,6 +19,7 @@ from utils.metrics import Evaluator
 from utils import utils
 from torch.autograd import Variable
 import poselib
+import transforms3d.quaternions as txq
  
 import os.path as osp
 
@@ -156,6 +157,9 @@ class Trainer(object):
         test_seg_loss = 0.0
         test_ver_loss = 0.0
         for i, data in enumerate(tbar):
+            # debug
+            if i == 10:
+                break
             image, seg_target, vertex_target = [d.cuda() for d in data[:3]]
             valid_mask = data[-1].cuda()
             pose_target, camera_k_matrix, ori_img = data[3:]
@@ -214,17 +218,28 @@ class Trainer(object):
 
                 # evaluate atf
                 print('validating image: {}'.format(i + 1))
-                line3d_filter, line2d_filter, _, ratio_filter = utils.evaluate_afm(vertex_pred, seg_pred, self.id2center, threshold=0.1, 
+                line3d_filter, line2d_filter, idx_filter, ratio_filter = utils.evaluate_afm(vertex_pred, seg_pred, self.id2center, threshold=0.1, 
                                                                     min_mask_num=self.cfg["val_label_filter_threshsold"])
                 
-                # camera_k_matrix = camera_k_matrix.squeeze().numpy()
+                camera_k_matrix = camera_k_matrix.squeeze().numpy()
                 # translation_distance, angular_distance, error = 1e9, 1e9, 1e9
                 if line2d_filter.shape[0] > 6:
-                    l, X, V = utils.tr2poselib_inpf(line2d_filter, line3d_filter)
-                    print(len(l), len(X), len(V))
-                    camera_pose = poselib.p3ll(l, X, V)
-                    print(len(camera_pose),camera_pose)
-                    
+                    # l, X, V = utils.tr2poselib_inpf(line2d_filter, line3d_filter)
+                    # print("the top 3 reliable label is {}".format(idx_filter[:3]))
+                    # camera_pose = poselib.p3ll(l[:3], X[:3], V[:3])
+                    camera_dict = {'model': 'SIMPLE_RADIAL', 'width': 960, 'height': 540, 'params': [camera_k_matrix[0][0], camera_k_matrix[0][2], camera_k_matrix[1][2], -0.04657]}
+                    line2d_1 = [line2d_filter[i][:2].reshape(2,1).astype(np.float64) for i in range(len(line2d_filter))]
+                    line2d_2 = [line2d_filter[i][2:].reshape(2,1).astype(np.float64) for i in range(len(line2d_filter))]
+                    line3d_1 = [line3d_filter[i][:3].reshape(3,1).astype(np.float64) for i in range(len(line2d_filter))]
+                    line3d_2 = [line3d_filter[i][3:].reshape(3,1).astype(np.float64) for i in range(len(line2d_filter))]
+                    camera_pose = poselib.estimate_absolute_pose_pnpl([], [], line2d_1, line2d_2, line3d_1, line3d_2, camera_dict)[0]
+                    pose_pred = np.zeros((3,4))
+                    pose_pred[:3, :3] = txq.quat2mat(camera_pose.q)
+                    pose_pred[:3, 3] = camera_pose.t
+                    translation_distance, angular_distance = utils.cm_degree_metric(
+                        pose_pred, pose_target)
+                    print(translation_distance, angular_distance, i)
+
                 # if pt2d_filter.shape[0] > 6:
                 #     # pnp
                 #     ret, pose_pred = utils.pnp(
@@ -234,16 +249,16 @@ class Trainer(object):
                 #     translation_distance, angular_distance = utils.cm_degree_metric(
                 #         pose_pred, pose_target)
                 #     print(translation_distance, angular_distance, error, i)
-                # ten_count.append(translation_distance <
-                #                  10 and angular_distance < 10)
-                # five_count.append(translation_distance <
-                #                   5 and angular_distance < 5)
-                # three_count.append(translation_distance <
-                #                    3 and angular_distance < 3)
-                # one_count.append(translation_distance <
-                #                  1 and angular_distance < 1)
-                # translation_list.append(translation_distance)
-                # angular_list.append(angular_distance)
+                ten_count.append(translation_distance <
+                                 10 and angular_distance < 10)
+                five_count.append(translation_distance <
+                                  5 and angular_distance < 5)
+                three_count.append(translation_distance <
+                                   3 and angular_distance < 3)
+                one_count.append(translation_distance <
+                                 1 and angular_distance < 1)
+                translation_list.append(translation_distance)
+                angular_list.append(angular_distance)
                 # reproject_list.append(error)
 
                 # Add batch sample into evaluator
@@ -274,37 +289,37 @@ class Trainer(object):
                         else:
                             self.summary.visualize_vertex_image(ori_img, vertex_pred, vertex_target,
                                                                 epoch, i, global_step)
-            break
-        # mIoU, Acc, Acc_class, FWIoU = self.summary.visualize_seg_evaluator(
-        #     self.evaluator, epoch, "val/seg/")
-        # print("Validation:")
-        # print("[Epoch: %d, numImages: %5d]" % (epoch, num_images))
-        # print("Loss: %.9f" % (test_loss / num_iter_val))
-        # print("Seg Loss: %.9f" % (test_seg_loss / num_iter_val))
-        # print("Ver Loss: %.9f" % (test_ver_loss / num_iter_val))
-        # self.summary.add_scalar("val/total_loss_epoch",
-        #                         test_loss / num_iter_val, epoch)
-        # self.summary.add_scalar("val/total_seg_epoch",
-        #                         test_seg_loss / num_iter_val, epoch)
-        # self.summary.add_scalar("val/total_ver_epoch",
-        #                         test_ver_loss / num_iter_val, epoch)
-        # self.summary.add_scalar("val/pnp/10cm_epoch",
-        #                         np.mean(ten_count), epoch)
-        # self.summary.add_scalar("val/pnp/5cm_epoch",
-        #                         np.mean(five_count), epoch)
-        # self.summary.add_scalar("val/pnp/3cm_epoch",
-        #                         np.mean(three_count), epoch)
-        # self.summary.add_scalar("val/pnp/1cm_epoch", np.mean(one_count), epoch)
-        # self.summary.add_scalar(
-        #     "val/pnp/translation_median_epoch", np.median(translation_list), epoch)
-        # self.summary.add_scalar(
-        #     "val/pnp/angular_median_epoch", np.median(angular_list), epoch)
 
-        # new_pred = {"mIoU": mIoU.item(), "Acc": Acc.item(), "Acc_class": Acc_class.item(), "FWIoU": FWIoU.item(),
-        #             "10cm": np.mean(ten_count),
-        #             "5cm": np.mean(five_count), "3cm": np.mean(three_count), "1cm": np.mean(one_count),
-        #             "translation_median": np.median(translation_list), "angular_list": np.median(angular_list)}
-        # print(new_pred)
+        mIoU, Acc, Acc_class, FWIoU = self.summary.visualize_seg_evaluator(
+            self.evaluator, epoch, "val/seg/")
+        print("Validation:")
+        print("[Epoch: %d, numImages: %5d]" % (epoch, num_images))
+        print("Loss: %.9f" % (test_loss / num_iter_val))
+        print("Seg Loss: %.9f" % (test_seg_loss / num_iter_val))
+        print("Ver Loss: %.9f" % (test_ver_loss / num_iter_val))
+        self.summary.add_scalar("val/total_loss_epoch",
+                                test_loss / num_iter_val, epoch)
+        self.summary.add_scalar("val/total_seg_epoch",
+                                test_seg_loss / num_iter_val, epoch)
+        self.summary.add_scalar("val/total_ver_epoch",
+                                test_ver_loss / num_iter_val, epoch)
+        self.summary.add_scalar("val/pnp/10cm_epoch",
+                                np.mean(ten_count), epoch)
+        self.summary.add_scalar("val/pnp/5cm_epoch",
+                                np.mean(five_count), epoch)
+        self.summary.add_scalar("val/pnp/3cm_epoch",
+                                np.mean(three_count), epoch)
+        self.summary.add_scalar("val/pnp/1cm_epoch", np.mean(one_count), epoch)
+        self.summary.add_scalar(
+            "val/pnp/translation_median_epoch", np.median(translation_list), epoch)
+        self.summary.add_scalar(
+            "val/pnp/angular_median_epoch", np.median(angular_list), epoch)
+
+        new_pred = {"mIoU": mIoU.item(), "Acc": Acc.item(), "Acc_class": Acc_class.item(), "FWIoU": FWIoU.item(),
+                    "10cm": np.mean(ten_count),
+                    "5cm": np.mean(five_count), "3cm": np.mean(three_count), "1cm": np.mean(one_count),
+                    "translation_median": np.median(translation_list), "angular_list": np.median(angular_list)}
+        print(new_pred)
         # if new_pred["translation_median"] < self.best_pred["translation_median"]:
         #     is_best = True
         #     self.best_pred = new_pred
