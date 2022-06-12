@@ -408,6 +408,8 @@ def main():
     parser.add_argument("--experiment", type=str, default="",
                         help="experiment name [end with '/']")
     parser.add_argument("--base_dir", type=str, default="")
+    parser.add_argument("--epochs", type=int, default=100)
+    parser.add_argument("--resume_ckpt", type=str, default="")
     args = parser.parse_args()
 
     debug = None
@@ -427,14 +429,15 @@ def main():
         cfg.opt["use_aug"] = True
     if args.resume == "true":
         cfg.opt["resume"] = True
-        cfg.opt["resume_checkpoint"] = cfg["export_dir"] + \
-            '/ckpts/checkpoint-backup.pth.tar'
+    if args.resume_ckpt != "":
+        cfg.opt["resume_checkpoint"] = args.resume_ckpt
     if args.landmark != "":
         cfg.opt["landmark"] = args.landmark
     if args.experiment != "":
         cfg.opt["experiment"] = args.experiment
     if args.base_dir != "":
         cfg.opt["base_dir"] = args.base_dir
+    cfg.opt["epochs"] = args.epochs
 
     cfg.print_opt()
     cfg.set_environmental_variables()
@@ -450,9 +453,8 @@ def main():
     for epoch in range(trainer.cfg["start_epoch"], trainer.cfg["epochs"]):
         if cfg["validation_debug"]:
             trainer.validation(epoch)
-        # isValidationEpoch = (epoch > cfg["eval_epoch_begin"] and (
-        #     epoch + 1) % cfg["eval_interval"] == 0)
-        isValidationEpoch = True
+        isValidationEpoch = (epoch > cfg["eval_epoch_begin"] and (
+            epoch + 1) % cfg["eval_interval"] == 0)
         if cfg["train"]:
             trainer.training(epoch)
         if not trainer.cfg["no_val"] and isValidationEpoch == True:
@@ -463,3 +465,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

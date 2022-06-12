@@ -94,6 +94,7 @@ for scene in scenes:
             scale = 2
         k_matrix[:2, :] = k_matrix[:2, :] / scale
 
+        # generate attraction field map
         global_pt2d_start = np.zeros((id2line.shape[0], 2), dtype=np.float64)
         global_pt2d_end = np.zeros((id2line.shape[0], 2), dtype=np.float64)
 
@@ -121,12 +122,14 @@ for scene in scenes:
         t = t / ((np.linalg.norm(pt2d_end - pt2d_start, axis=-1) ** 2) + 1e-8)
         aux = np.zeros((height, width, 2))
         t = np.tile(t[:,:,None], 2)
+        # 3 cases
         mask1 = np.where(t <= 0, pt2d_start - vertex_2d, aux)
         mask2 = np.where(t >= 1, pt2d_end - vertex_2d, aux)
         mask3 = np.where((t>0)&(t<1), (pt2d_end - pt2d_start) * t + pt2d_start - vertex_2d, aux)
         attrac_field = mask1 + mask2 + mask3
         attrac_field[label == 0] = 0
 
+        # visualize attraction field map
         if args.ver_png == "true":
             vertex_1d = np.arctan2(attrac_field[..., 1], attrac_field[..., 0])
             vertex_1d = (vertex_1d * 180/np.pi).astype(np.int) + 180
@@ -136,7 +139,7 @@ for scene in scenes:
             vertex_1d[label == 0] = 0
             cv2.imwrite(file.replace('seg.png', 'vertex.png'), vertex_1d)
 
-        # resize
+        # resize for training convenience
         attrac_field[:,:,0] = -1 * np.sign(attrac_field[:,:,0]) * np.log(abs(attrac_field[:,:,0] / width) + 1e-6)
         attrac_field[:,:,1] = -1 * np.sign(attrac_field[:,:,1]) * np.log(abs(attrac_field[:,:,1] / height) + 1e-6)
 

@@ -25,6 +25,7 @@ class CambridgeSegmentation(Dataset):
 
     def __init__(self,
                  cfg,
+                 num=-1,
                  split="train",
                  ):
         """
@@ -64,7 +65,9 @@ class CambridgeSegmentation(Dataset):
             split_fn = osp.join(self._data_dir, 'test_list.json')
 
         lines.extend(json.load(open(split_fn)))
-
+        
+        if num != -1:
+            lines = [lines[num]]
         # lines = train_list
 
         # accelerate debug

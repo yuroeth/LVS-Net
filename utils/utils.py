@@ -429,7 +429,7 @@ def evaluate_afm(vertex_pred, seg_pred, id2lines, threshold=0.1, min_num=30, max
     line3d_filter = []
     line2d_filter = []
     idx_filter = []
-    ratio_filter = []
+    length_filter = []
     for line, idx in line_preds:
         # if line[0][4] == 0 or line[0][4] >= threshold:
         if line[0][0][4] == 0:
@@ -439,7 +439,7 @@ def evaluate_afm(vertex_pred, seg_pred, id2lines, threshold=0.1, min_num=30, max
         line2d_filter.append(rects[:4])
         line3d_filter.append(id2lines[idx])
         idx_filter.append(idx.data.item())
-        ratio_filter.append(rects[4] / lengths)
+        length_filter.append(lengths)
     if len(line3d_filter) > 0:
         line3d_filter = np.concatenate(line3d_filter).reshape(-1, 6)
         line2d_filter = np.concatenate(line2d_filter).reshape(-1, 4)
@@ -448,16 +448,18 @@ def evaluate_afm(vertex_pred, seg_pred, id2lines, threshold=0.1, min_num=30, max
         line2d_filter = np.array(line2d_filter)
     
     idx_filter = np.array(idx_filter)
-    ratio_filter = np.array(ratio_filter)
+    length_filter = np.array(length_filter)
 
     # sort according to the rectangle ratio
-    idx = np.argsort(ratio_filter)
-    ratio_filter = ratio_filter[idx]
+    idx = np.argsort(length_filter)[::-1] # descending
+    # line_remain = int(len(idx) * 0.9)
+    # idx = idx[:line_remain]
+    length_filter = length_filter[idx]
     line2d_filter = line2d_filter[idx]
     line3d_filter = line3d_filter[idx]
     idx_filter = idx_filter[idx]
     
-    return line3d_filter, line2d_filter, idx_filter, ratio_filter
+    return line3d_filter, line2d_filter, idx_filter, length_filter
 
 def tr2poselib_inpf(line2d, line3d):
     assert line2d.shape[0] == line3d.shape[0]
