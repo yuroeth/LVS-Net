@@ -5,7 +5,7 @@ This work is the extension of VS-Net for line segment landmarks. The code is bui
 
 Briefly, we trained the deep NN to predict both the line segmentation map and the [attraction field map](https://github.com/cherubicXN/afm_cvpr2019) from input camera image. We tested our model on Cambridge Landmark Dataset and achieved similar accuracy with VS-Net on 3 out of 5 scenes. Future work includes the improvement of 3D line segment quality and the integration of point and line landmarks for establishing 2D-3D correspondences.
 
-![image](https://github.com/ZhengYaWei1992/ZWProgressView/blob/master/Untitled3.gif](https://github.com/yuroeth/LVS-Net/blob/master/assets/predicted_contrast_mesh.gif)
+![image](https://github.com/yuroeth/LVS-Net/blob/master/assets/predicted_contrast_mesh.gif)
 
 ### Requirements
 We recommend Ubuntu 18.04, cuda 10.0, python 3.7.
